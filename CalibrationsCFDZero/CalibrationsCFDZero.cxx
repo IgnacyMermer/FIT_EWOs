@@ -50,6 +50,10 @@ bool CalibrationsCFDZero::methodInterface(const QString &name, QVariant::Type &r
         args.append(QVariant::List);
         return true;
     }
+    if (name == "clearValues"){
+        retVal = QVariant::Invalid;
+        return true;
+    }
     return false;
 }
 
