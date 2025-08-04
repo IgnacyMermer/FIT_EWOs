@@ -536,7 +536,9 @@ void MyWidget::setValues(const QVector<double> &newValues) {
         barsList1[i]->setData(xDataValues[i], yDataValues1[i]);
         barsList2[i]->setData(xDataValues[i], yDataValues2[i]);
         barsList1[i]->setBrush(QBrush(OKcolor.darker(200)));
-        barsList2[i]->setBrush(QBrush(OKcolor));
+        QColor semiTransparentOK = OKcolor;
+        semiTransparentOK.setAlpha(150);
+        barsList2[i]->setBrush(QBrush(semiTransparentOK));
         barsList1[i]->setWidth(newBinWidth);
         barsList2[i]->setWidth(newBinWidth);
       }
@@ -643,7 +645,7 @@ void MyWidget::limitXAxisRange(const QCPRange &newRange) {
   senderPlot->blockSignals(true);
   senderPlot->xAxis->setRange(fixedRange);
   senderPlot->blockSignals(false);
-  senderPlot->replot();
+  //senderPlot->replot();
   adjustYAxisRange();
 }
 
