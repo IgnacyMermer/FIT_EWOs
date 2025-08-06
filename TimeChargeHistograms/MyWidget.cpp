@@ -81,15 +81,35 @@ MyWidget::MyWidget(QWidget *parent) : QWidget(parent) {
 }
 
 void MyWidget::setPlotLabel(double index, double sum, double mean, double rms,
-                            double ps) {
+                            double ps, double sum2, double mean2, double rms2) {
   if (index >= 0 && index < labels.size()) {
-    labels[index]->setText(
+    if(chargeType==3){
+      labels[index]->setMinimumHeight(30);
+      labels[index]->setMaximumHeight(45);
+      labels[index]->setStyleSheet("font-size: 10pt;");
+      labels[index]->setText(
+        QString::asprintf("Σ=%llu μ=%.2f σ=%.*f\nΣ=%llu μ=%.2f σ=%.*f", 
+          static_cast<quint64>(sum), mean, ps == 1. ? 0 : 3, 
+          rms * (ps == 1. ? 1e3 : 1),
+          static_cast<quint64>(sum2), mean2, ps == 1. ? 0 : 3, 
+          rms2 * (ps == 1. ? 1e3 : 1))
+        );
+    }
+    else{
+      labels[index]->setMinimumHeight(20);
+      labels[index]->setMaximumHeight(30);
+      labels[index]->setStyleSheet("font-size: 13pt;");
+      labels[index]->setText(
         QString::asprintf("Σ=%llu μ=%.2f σ=%.*f", static_cast<quint64>(sum),
                           mean, ps == 1. ? 0 : 3, rms * (ps == 1. ? 1e3 : 1)));
+  
+    }
   }
 }
 
-void MyWidget::setXAxisType(int type, int threshold) {
+void MyWidget::setXAxisType(int type, int thresholdParam) {
+  xAxisType=type;
+  threshold=thresholdParam;
   if(originalXDataValues.size()>0&&yDataValues1.size()>0
   &&originalXDataValues[0].size()>0&&originalYDataValues1[0].size()>0){
     switch (type) {
@@ -236,6 +256,11 @@ void MyWidget::setTimeUnits(int type) {
     if (!plots[i]) {
       continue;
     }
+    else{
+      plots[i]->setNoAntialiasingOnDrag(true);
+      plots[i]->setUpdatesEnabled(false);
+      plots[i]->blockSignals(true);
+    }
 
     // Scale the current x-axis range by the ratio of new bin width to the current bar width.
     //double currentBarWidth = (barsList1[0] ? barsList1[0]->width() : 1.0);
@@ -256,37 +281,29 @@ void MyWidget::setTimeUnits(int type) {
     plots[i]->xAxis->setTickLength(0, defaultBin ? 0 : 1);
 
     if (xRangeType == 0) {
+      plots[i]->blockSignals(true);
       plots[i]->xAxis->setRange(newRange);
+      plots[i]->blockSignals(false);
     }
 
     // Update the bar data keys and values for barsList1.
     if (i < yDataValues1.size() && !yDataValues1[i].isEmpty()) {
       QSharedPointer<QCPBarsDataContainer> dataContainer = barsList1[i]->data();
       if (dataContainer) {
-        QCPBarsDataContainer::iterator iBar = dataContainer->begin();
+        QVector<QCPBarsData> dataVec;
+        QVector<double> xVec;
         for (qint16 binI = 0; binI < yDataValues1[i].size(); ++binI) {
-          if (iBar != dataContainer->end()) {
-            // Use the new bin width when calculating the key.
-            iBar->key = newMinXValue + binI * newBinWidth;
-            // Set the value from our stored data.
-            iBar->value = static_cast<quint32>(yDataValues1[i][binI]);
-            ++iBar;
-          }
+          dataVec.append(QCPBarsData(newMinXValue + binI * newBinWidth, yDataValues1[i][binI]));
+          xVec.append(newMinXValue + binI * newBinWidth);
         }
+        dataContainer->set(dataVec);
+        xDataValues[i]=xVec;
       }
     }
-
-    QSharedPointer<QCPBarsDataContainer> dataContainer = barsList1[i]->data();
-    xDataValues[i].clear();
-
-    for (auto it = dataContainer->constBegin(); it != dataContainer->constEnd(); ++it) {
-        xDataValues[i].append(it->key);
-    }
-
-    //plots[i]->replot(QCustomPlot::rpQueuedReplot);
   }
   originalXDataValues=xDataValues;
-  adjustYAxisRange();
+  setXAxisType(xAxisType, threshold);
+  //adjustYAxisRange();
 }
 
 void MyWidget::setChargeUnitsValues(float value, bool isMV){
@@ -333,6 +350,11 @@ void MyWidget::setChargeUnits(int type) {
     if (!plots[i]) {
       continue;
     }
+    else{
+      plots[i]->setNoAntialiasingOnDrag(true);
+      plots[i]->setUpdatesEnabled(false);
+      plots[i]->blockSignals(true);
+    }
 
     // Scale the current x-axis range by the ratio of new bin width to the current bar width.
     //double currentBarWidth = (barsList1[0] ? barsList1[0]->width() : 1.0);
@@ -358,51 +380,57 @@ void MyWidget::setChargeUnits(int type) {
     plots[i]->xAxis->setTickLength(0, defaultBin ? 0 : 1);
     // Optionally update the x-axis range if xRangeType is 0.
     if (xRangeType == 0) {
+      blockAutoRangeAdjust = true;
+      plots[i]->blockSignals(true);
       plots[i]->xAxis->setRange(newRange);
+      plots[i]->blockSignals(false);
+      blockAutoRangeAdjust = false;
     }
 
     if (chargeType==2 && i < yDataValuesSum.size() && !yDataValuesSum[i].isEmpty()) {
       QSharedPointer<QCPBarsDataContainer> dataContainer1 = barsList1[i]->data();
       QSharedPointer<QCPBarsDataContainer> dataContainer2 = barsList2[i]->data();
       if (dataContainer1&&dataContainer2) {
-        QCPBarsDataContainer::iterator iBar1 = dataContainer1->begin();
-        QCPBarsDataContainer::iterator iBar2 = dataContainer2->begin();
+        QVector<QCPBarsData> dataVec1, dataVec2;
+        QVector<double> xVec;
         for (qint16 binI = 0; binI < yDataValuesSum[i].size(); ++binI) {
-          if (iBar1 != dataContainer1->end()) {
-            iBar1->key = newMinXValue + binI * newBinWidth;
-            iBar1->value = static_cast<quint32>(yDataValuesSum[i][binI]);
-            iBar2->key = newMinXValue + binI * newBinWidth;
-            iBar2->value = static_cast<quint32>(yDataValues1[i][binI]);
-            ++iBar1;
-            ++iBar2;
-          }
+          dataVec1.append(QCPBarsData(newMinXValue + binI * newBinWidth, 
+            static_cast<quint32>(yDataValuesSum[i][binI])));
+          dataVec2.append(QCPBarsData(newMinXValue + binI * newBinWidth, 
+            static_cast<quint32>(yDataValues1[i][binI])));
+          xVec.append(newMinXValue + binI * newBinWidth);
         }
+        dataContainer1->set(dataVec1);
+        dataContainer2->set(dataVec2);
+        xDataValues[i]=xVec;
       }
     }
     else if (chargeType==0 && i < yDataValues1.size() && !yDataValues1[i].isEmpty()) {
       QSharedPointer<QCPBarsDataContainer> dataContainer = barsList1[i]->data();
       if (dataContainer) {
-        QCPBarsDataContainer::iterator iBar = dataContainer->begin();
+        QVector<QCPBarsData> dataVec1;
+        QVector<double> xVec;
         for (qint16 binI = 0; binI < yDataValues1[i].size(); ++binI) {
-          if (iBar != dataContainer->end()) {
-            iBar->key = newMinXValue + binI * newBinWidth;
-            iBar->value = static_cast<quint32>(yDataValues1[i][binI]);
-            ++iBar;
-          }
+          dataVec1.append(QCPBarsData(newMinXValue + binI * newBinWidth, 
+            static_cast<quint32>(yDataValues1[i][binI])));
+          xVec.append(newMinXValue + binI * newBinWidth);
         }
+        dataContainer->set(dataVec1);
+        xDataValues[i]=xVec;
       }
     }
     else if (chargeType==1 && i < yDataValues2.size() && !yDataValues2[i].isEmpty()) {
       QSharedPointer<QCPBarsDataContainer> dataContainer = barsList1[i]->data();
       if (dataContainer) {
-        QCPBarsDataContainer::iterator iBar = dataContainer->begin();
+        QVector<QCPBarsData> dataVec2;
+        QVector<double> xVec;
         for (qint16 binI = 0; binI < yDataValues2[i].size(); ++binI) {
-          if (iBar != dataContainer->end()) {
-            iBar->key = newMinXValue + binI * newBinWidth;
-            iBar->value = static_cast<quint32>(yDataValues2[i][binI]);
-            ++iBar;
-          }
+          dataVec2.append(QCPBarsData(newMinXValue + binI * newBinWidth, 
+            static_cast<quint32>(yDataValues2[i][binI])));
+          xVec.append(newMinXValue + binI * newBinWidth);
         }
+        dataContainer->set(dataVec2);
+        xDataValues[i]=xVec;
       }
     }
     else if (chargeType==3 && i < yDataValues1.size() && !yDataValues1[i].isEmpty()
@@ -410,30 +438,24 @@ void MyWidget::setChargeUnits(int type) {
       QSharedPointer<QCPBarsDataContainer> dataContainer1 = barsList1[i]->data();
       QSharedPointer<QCPBarsDataContainer> dataContainer2 = barsList2[i]->data();
       if (dataContainer1&&dataContainer2) {
-        QCPBarsDataContainer::iterator iBar1 = dataContainer1->begin();
-        QCPBarsDataContainer::iterator iBar2 = dataContainer2->begin();
+        QVector<QCPBarsData> dataVec1, dataVec2;
+        QVector<double> xVec;
         for (qint16 binI = 0; binI < std::min(yDataValues1[i].size(),yDataValues2[i].size()); ++binI) {
-          if (iBar1 != dataContainer1->end()) {
-            iBar1->key = newMinXValue + binI * newBinWidth;
-            iBar1->value = static_cast<quint32>(yDataValues1[i][binI]);
-            iBar2->key = newMinXValue + binI * newBinWidth;
-            iBar2->value = static_cast<quint32>(yDataValues2[i][binI]);
-            ++iBar1;
-            ++iBar2;
-          }
+          dataVec1.append(QCPBarsData(newMinXValue + binI * newBinWidth, 
+            static_cast<quint32>(yDataValues1[i][binI])));
+          dataVec2.append(QCPBarsData(newMinXValue + binI * newBinWidth, 
+            static_cast<quint32>(yDataValues2[i][binI])));
+          xVec.append(newMinXValue + binI * newBinWidth);
         }
+        dataContainer1->set(dataVec1);
+        dataContainer2->set(dataVec2);
+        xDataValues[i]=xVec;
       }
-    }
-
-    QSharedPointer<QCPBarsDataContainer> dataContainer = barsList1[i]->data();
-    xDataValues[i].clear();
-
-    for (auto it = dataContainer->constBegin(); it != dataContainer->constEnd(); ++it) {
-        xDataValues[i].append(it->key);
     }
   }
   originalXDataValues=xDataValues;
-  adjustYAxisRange();
+  setXAxisType(xAxisType, threshold);
+  //adjustYAxisRange();
 }
 
 void MyWidget::setValues(const QVector<double> &newValues) {
@@ -550,8 +572,8 @@ void MyWidget::setValues(const QVector<double> &newValues) {
       originalXRanges.append(QCPRange(minXValue, maxXValue));
   }
 
-
-  adjustYAxisRange();
+  setXAxisType(xAxisType, threshold);
+  //adjustYAxisRange();
 }
 
 void MyWidget::setPsParameter(bool ps) {
@@ -570,7 +592,8 @@ void MyWidget::adjustYAxisRange() {
 
     QCPRange xRange = plot->xAxis->range();
     double maxY = 0, mean = 0.0, RMS = 0.0;
-    uint64_t sum = 0;
+    double mean2 = 0.0, RMS2 = 0.0;
+    uint64_t sum = 0, sum2=0;
     bool hasData = false;
 
     bool isBarsList1=false;
@@ -589,6 +612,11 @@ void MyWidget::adjustYAxisRange() {
             mean += it->value * (it->key);
             RMS += it->value * (it->key) * (it->key);
           }
+          else{
+            sum2 += it->value;
+            mean2 += it->value * (it->key);
+            RMS2 += it->value * (it->key) * (it->key);
+          }
         }
       }
     }
@@ -597,13 +625,24 @@ void MyWidget::adjustYAxisRange() {
       mean = mean / sum;
       RMS = sqrt((RMS / sum) - pow(mean, 2));  
     }
-    setPlotLabel(i, sum, mean, RMS, psParameter && unitsType == 1);
+    if (sum2 != 0) {
+      mean2 = mean2 / sum2;
+      RMS2 = sqrt((RMS2 / sum2) - pow(mean2, 2));  
+    }
+    if(chargeType==3){
+      setPlotLabel(i, sum, mean, RMS, psParameter && unitsType == 1, sum2, mean2, RMS2);
+    }
+    else{
+      setPlotLabel(i, sum, mean, RMS, psParameter && unitsType == 1);
+    }
 
     double minY = (yAxisType == 1) ? 0.8 : 0;
     double yLower = hasData ? qMax(minY, plot->yAxis->range().lower) : 0;
     double yUpper = hasData ? maxY * 1.1 : 1;
 
     plot->yAxis->setRange(yLower, yUpper);
+    plot->blockSignals(false);
+    plot->setUpdatesEnabled(true);
     plot->replot();
   }
 }
@@ -619,6 +658,9 @@ void MyWidget::setRange(double min, double max) {
 }
 
 void MyWidget::limitXAxisRange(const QCPRange &newRange) {
+  if(blockAutoRangeAdjust){
+    return;
+  }
   double minLimit = minXValue;
   double maxLimit = maxXValue;
 
@@ -650,17 +692,18 @@ void MyWidget::limitXAxisRange(const QCPRange &newRange) {
 }
 
 void MyWidget::applyFullConfiguration(const QVector<double> &newValues,
-                                      int xAxisType,
-                                      int threshold,
-                                      int yAxisType,
-                                      int chargeType,
-                                      int timeUnitType,
-                                      float chargeUnitValueMV,
-                                      float chargeUnitValueADC,
-                                      bool ps) {
+                                      int xAxisTypeParam,
+                                      int thresholdParam,
+                                      int yAxisTypeParam,
+                                      int chargeTypeParam,
+                                      int timeUnitTypeParam,
+                                      int chargeUnitTypeParam,
+                                      float chargeUnitValueMVParam,
+                                      float chargeUnitValueADCParam,
+                                      bool psParam) {
 
   suppressAutoAdjust=true;
-  psParameter = ps;
+  psParameter = psParam;
 
   for (QCustomPlot* plot : plots) {
     if (plot) {
@@ -670,13 +713,14 @@ void MyWidget::applyFullConfiguration(const QVector<double> &newValues,
   }
 
   setValues(newValues);
-  setXAxisType(xAxisType, threshold);
-  setYAxisType(yAxisType);
-  setChargeType(chargeType);
-  setTimeUnits(timeUnitType);
-  setChargeUnitsValues(chargeUnitValueMV, true);
-  setChargeUnitsValues(chargeUnitValueADC, false);
-  setPsParameter(ps);
+  setXAxisType(xAxisTypeParam, thresholdParam);
+  setYAxisType(yAxisTypeParam);
+  setChargeType(chargeTypeParam);
+  setTimeUnits(timeUnitTypeParam);
+  setChargeUnits(chargeUnitTypeParam);
+  setChargeUnitsValues(chargeUnitValueMVParam, true);
+  setChargeUnitsValues(chargeUnitValueADCParam, false);
+  setPsParameter(psParam);
 
   suppressAutoAdjust=false;
 

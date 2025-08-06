@@ -12,24 +12,26 @@ public:
 
   void setValues(const QVector<double> &newValues);
   void setRange(double min, double max);
-  void setXAxisType(int type, int threshold);
+  void setXAxisType(int type, int thresholdParam);
   void setYAxisType(int type);
   void setTimeUnits(int type);
   void setChargeUnits(int type);
   void setChargeType(int type);
   void setPsParameter(bool ps);
   void setPlotLabel(double index, double sum, double mean, double rms,
-                              double ps);
+                              double ps, double sum2=0.0, double mean2=0.0, 
+                              double rms2=0.0);
   void setChargeUnitsValues(float value, bool isMV); 
   void applyFullConfiguration(const QVector<double> &newValues,
-                                      int xAxisType,
-                                      int threshold,
-                                      int yAxisType,
-                                      int chargeType,
-                                      int timeUnitType,
-                                      float chargeUnitValueMV,
-                                      float chargeUnitValueADC,
-                                      bool ps);
+                                      int xAxisTypeParam,
+                                      int thresholdParam,
+                                      int yAxisTypeParam,
+                                      int chargeTypeParam,
+                                      int timeUnitTypeParam,
+                                      int chargeUnitTypeParam,
+                                      float chargeUnitValueMVParam,
+                                      float chargeUnitValueADCParam,
+                                      bool psParam);
 
 private slots:
   void adjustYAxisRange();
@@ -38,8 +40,9 @@ private slots:
 private:
   QVector<QVector<double>> valuesList;
   QList<QCustomPlot *> plots;
-  int xRangeType, chargeType, yAxisType;
+  int xRangeType, chargeType, yAxisType, xAxisType, threshold;
   int unitsType;
+  bool blockAutoRangeAdjust = false;
   double binWidth = 1.0;
   bool suppressAutoAdjust=false, psParameter=false;
   int histogramType = 0; // 0 = time, 1 = charge

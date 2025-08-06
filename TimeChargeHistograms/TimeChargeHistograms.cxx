@@ -160,8 +160,8 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
         return QVariant();
     }
     else if (name == "applyFullConfiguration") {
-        if (values.size() != 9) {
-            error = "Expected 9 arguments: data (list), xAxisType, threshold, yAxisType, chargeType, timeUnitType, chargeUnitValue, isMV, psParam";
+        if (values.size() != 10) {
+            error = "Expected 10 arguments: data (list), xAxisType, threshold, yAxisType, chargeType, timeUnitType, chargeUnitType, chargeUnitValue, isMV, psParam";
             return QVariant();
         }
         QVector<double> newValues;
@@ -173,13 +173,15 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
         int yAxisType = values[3].toInt();
         int chargeType = values[4].toInt();
         int timeUnitType = values[5].toInt();
-        float chargeUnitValueMV = static_cast<float>(values[6].toDouble());
-        float chargeUnitValueADC = static_cast<float>(values[7].toDouble());
-        bool psParam = values[8].toBool();
+        int chargeUnitType = values[6].toInt();
+        float chargeUnitValueMV = static_cast<float>(values[7].toDouble());
+        float chargeUnitValueADC = static_cast<float>(values[8].toDouble());
+        bool psParam = values[9].toBool();
 
         static_cast<MyWidget*>(baseWidget)->applyFullConfiguration(
             newValues, xAxisType, threshold, yAxisType, chargeType, 
-            timeUnitType, chargeUnitValueMV, chargeUnitValueADC, psParam);
+            timeUnitType, chargeUnitType, chargeUnitValueMV, chargeUnitValueADC, 
+            psParam);
 
         return QVariant();
     }
