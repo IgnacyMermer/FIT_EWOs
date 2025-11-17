@@ -2,6 +2,8 @@
 #include "CustomYAxisTicker.h"
 #include <QVBoxLayout>
 #include <cmath>
+#include <QtMath>
+
 
 const QColor OKcolor(0xb0d959);
 
@@ -90,7 +92,7 @@ void SinglePlotWidget::setValues(const QVector<double> &data1, const QVector<dou
     bars2->setWidth(newBinWidth);
 
     setChargeType(chargeType);
-    setXAxisType(xAxisType, threshold);
+    setXAxisType(xAxisType, threshold, minBin, maxBin);
 }
 
 
@@ -122,7 +124,7 @@ void SinglePlotWidget::setPlotLabel(double sum, double mean, double rms, double 
     }
 }
 
-void SinglePlotWidget::setXAxisType(int type, int thresholdParam) {
+void SinglePlotWidget::setXAxisType(int type, int thresholdParam, int minBin, int maxBin) {
     xAxisType = type;
     threshold = thresholdParam;
 
@@ -150,6 +152,8 @@ void SinglePlotWidget::setXAxisType(int type, int thresholdParam) {
         } else {
              plot->xAxis->setRange(originalXRange);
         }
+    } else if (type == 3){
+        plot->xAxis->setRange(minBin, maxBin);
     }
     adjustYAxisRange();
 }
@@ -294,4 +298,100 @@ void SinglePlotWidget::setChargeUnitsValues(float value, bool isMV) {
 void SinglePlotWidget::setPsParameter(bool ps) {
     psParameter = ps;
     adjustYAxisRange();
+}
+
+void SinglePlotWidget::setFitRange(double min, double max)
+{
+    fitMin = min;
+    fitMax = max;
+}
+
+void SinglePlotWidget::fitHistogram()
+{
+    qWarning() << "fit Histogram called";
+
+    if (xData.isEmpty() || yData1.isEmpty())
+        return;
+
+    // --- compute mean and sigma (moments inside fit range)
+    double sum = 0, sumX = 0, sumX2 = 0;
+    for (int i = 0; i < xData.size(); ++i) {
+        double x = xData[i];
+        if (x < fitMin || x > fitMax) continue;
+
+        double y = yData1[i];
+        sum   += y;
+        sumX  += x * y;
+        sumX2 += x * x * y;
+    }
+
+    if (sum <= 0) return;
+
+    double mean  = sumX / sum;
+    double sigma = qSqrt(sumX2 / sum - mean * mean);
+
+    // --- Gaussian curve points
+    QVector<double> gaussX, gaussY;
+    double maxY = *std::max_element(yData1.begin(), yData1.end());
+    for (int i = 0; i < 200; ++i) {
+        double x = fitMin + i * (fitMax - fitMin) / 200.0;
+        double y = maxY * qExp(-0.5 * qPow((x - mean) / sigma, 2));
+        gaussX.push_back(x);
+        gaussY.push_back(y);
+    }
+
+    // --- Background linear fit (exclude ±2σ region around peak)
+    double excludeMin = mean - 2*sigma;
+    double excludeMax = mean + 2*sigma;
+
+    double S=0, Sx=0, Sy=0, Sxx=0, Sxy=0;
+    for (int i=0; i<xData.size(); ++i) {
+        double x = xData[i];
+        if (x < fitMin || x > fitMax) continue;
+        if (x > excludeMin && x < excludeMax) continue; // skip peak region
+
+        double y = yData1[i];
+        S   += 1;
+        Sx  += x;
+        Sy  += y;
+        Sxx += x*x;
+        Sxy += x*y;
+    }
+
+    double p0=0, p1=0;
+    double denom = (S*Sxx - Sx*Sx);
+    if (fabs(denom) > 1e-12) {
+        p0 = (Sy*Sxx - Sx*Sxy) / denom;
+        p1 = (S*Sxy - Sx*Sy) / denom;
+    }
+
+    // --- Background line points
+    QVector<double> backX, backY;
+    for (int i=0; i<200; ++i) {
+        double x = fitMin + i*(fitMax - fitMin)/200.0;
+        double y = p0 + p1*x;
+        backX.push_back(x);
+        backY.push_back(y);
+    }
+
+    // --- Draw Gaussian (red)
+    if (!fitGraph) {
+        fitGraph = plot->addGraph();
+        fitGraph->setPen(QPen(Qt::red, 2));
+    }
+    fitGraph->setData(gaussX, gaussY);
+
+    // --- Draw Background (blue dashed)
+    if (!backGraph) {
+        backGraph = plot->addGraph();
+        QPen pen(Qt::blue, 2, Qt::DashLine);
+        backGraph->setPen(pen);
+    }
+    backGraph->setData(backX, backY);
+
+    plot->replot();
+
+    // --- Show results in label
+    label->setText(QString("Σ=%.0f  μ=%.2f  σ=%.2f  p0=%.2f  p1=%.3f")
+                   .arg(sum).arg(mean).arg(sigma).arg(p0).arg(p1));
 }

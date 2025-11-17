@@ -51,9 +51,9 @@ void MyWidget::setRange(double min, double max) {
     }
 }
 
-void MyWidget::setXAxisType(int type, int thresholdParam) {
+void MyWidget::setXAxisType(int type, int thresholdParam, int minBin, int maxBin) {
     for (SinglePlotWidget *widget : plotWidgets) {
-        widget->setXAxisType(type, thresholdParam);
+        widget->setXAxisType(type, thresholdParam, minBin, maxBin);
     }
 }
 
@@ -100,6 +100,19 @@ void MyWidget::setPlotLabel(int index, double sum, double mean, double rms,
     }
 }
 
+void MyWidget::setFitRange(double min, double max) {
+    for (SinglePlotWidget *widget : plotWidgets) { 
+        widget->setFitRange(min,max);
+    }
+}
+
+void MyWidget::fitHistogram() {
+    for (SinglePlotWidget *widget : plotWidgets) {
+        if (widget) {
+            widget->fitHistogram();
+        }
+    }
+}
 
 void MyWidget::applyFullConfiguration(const QVector<double> &newValues,
                                       int xAxisTypeParam, int thresholdParam,

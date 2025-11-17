@@ -49,6 +49,18 @@ bool TimeChargeHistograms::methodInterface(const QString &name, QVariant::Type &
         args.append(QVariant::List);
         return true;
     }
+    
+    if (name == "setFitRange") {
+        retVal = QVariant::Invalid;
+        args.append(QVariant::Double);
+        args.append(QVariant::Double);
+        return true;
+    }
+    
+    if (name == "fitHistogram") {
+        retVal = QVariant::Invalid;
+        return true;
+    }
     return false;
 }
 
@@ -194,6 +206,22 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
         static_cast<MyWidget*>(baseWidget)->setPsParameter(psParam);
         return QVariant();
     }
+    
+    else if (name == "setFitRange") {
+        if (values.size() != 2) {
+           error = "Expected 2 doubles for fit range";
+           return QVariant();
+        }   
+        double fitMin = values[0].toDouble();
+        double fitMax = values[1].toDouble();
+        static_cast<MyWidget*>(baseWidget)->setFitRange(fitMin, fitMax);
+        return QVariant();
+    }
 
+    else if (name == "fitHistogram") {
+        static_cast<MyWidget*>(baseWidget)->fitHistogram();
+        return QVariant();
+    }
+ 
     return BaseExternWidget::invokeMethod(name, values, error);
 }
