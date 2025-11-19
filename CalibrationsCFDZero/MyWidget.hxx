@@ -1,14 +1,14 @@
-#ifndef MYWIDGET_HXX
-#define MYWIDGET_HXX
+#ifndef HISTOGRAMPLOT_HXX
+#define HISTOGRAMPLOT_HXX
 
 #include "qcustomplot.h"
 #include <QVector>
 #include <QWidget>
 
-class MyWidget : public QCustomPlot {
+class HistogramPlot : public QCustomPlot {
   Q_OBJECT
 public:
-  explicit MyWidget(QWidget *parent = nullptr);
+  explicit HistogramPlot(QWidget *parent = nullptr);
 
   void setInitialSteps(int steps);
   void setHistogramLine(int i, int j, QVector<quint32> x);
@@ -47,4 +47,4 @@ private:
   QVector<double> _y1;
 };
 
-#endif // MYWIDGET_HXX
+#endif // HISTOGRAMPLOT_HXX

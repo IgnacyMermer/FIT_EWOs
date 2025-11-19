@@ -1,8 +1,8 @@
-#include "MyWidget.hxx"
+#include "HistogramPlot.hxx"
 #include "SinglePlotWidget.h"
 #include <QGridLayout>
 
-MyWidget::MyWidget(QWidget *parent) : QWidget(parent) {
+HistogramPlot::HistogramPlot(QWidget *parent) : QWidget(parent) {
     QGridLayout *layout = new QGridLayout(this);
 
     for (int row = 0; row < 3; ++row) {
@@ -14,7 +14,7 @@ MyWidget::MyWidget(QWidget *parent) : QWidget(parent) {
     }
 }
 
-void MyWidget::setValues(const QVector<double> &newValues) {
+void HistogramPlot::setValues(const QVector<double> &newValues) {
     int numPlots = plotWidgets.size();
     if (numPlots == 0) return;
 
@@ -43,7 +43,7 @@ void MyWidget::setValues(const QVector<double> &newValues) {
     }
 }
 
-void MyWidget::setRange(double min, double max) {
+void HistogramPlot::setRange(double min, double max) {
     minXValue = min;
     maxXValue = max;
     for (SinglePlotWidget *widget : plotWidgets) {
@@ -51,62 +51,62 @@ void MyWidget::setRange(double min, double max) {
     }
 }
 
-void MyWidget::setXAxisType(int type, int thresholdParam, int minBin, int maxBin) {
+void HistogramPlot::setXAxisType(int type, int thresholdParam, int minBin, int maxBin) {
     for (SinglePlotWidget *widget : plotWidgets) {
         widget->setXAxisType(type, thresholdParam, minBin, maxBin);
     }
 }
 
-void MyWidget::setYAxisType(int type) {
+void HistogramPlot::setYAxisType(int type) {
     for (SinglePlotWidget *widget : plotWidgets) {
         widget->setYAxisType(type);
     }
 }
 
-void MyWidget::setChargeType(int type) {
+void HistogramPlot::setChargeType(int type) {
     for (SinglePlotWidget *widget : plotWidgets) {
         widget->setChargeType(type);
     }
 }
 
-void MyWidget::setTimeUnits(int type) {
+void HistogramPlot::setTimeUnits(int type) {
     for (SinglePlotWidget *widget : plotWidgets) {
         widget->setTimeUnits(type);
     }
 }
 
-void MyWidget::setChargeUnits(int type) {
+void HistogramPlot::setChargeUnits(int type) {
     for (SinglePlotWidget *widget : plotWidgets) {
         widget->setChargeUnits(type);
     }
 }
 
-void MyWidget::setChargeUnitsValues(float value, bool isMV) {
+void HistogramPlot::setChargeUnitsValues(float value, bool isMV) {
     for (SinglePlotWidget *widget : plotWidgets) {
         widget->setChargeUnitsValues(value, isMV);
     }
 }
 
-void MyWidget::setPsParameter(bool ps) {
+void HistogramPlot::setPsParameter(bool ps) {
     for (SinglePlotWidget *widget : plotWidgets) {
         widget->setPsParameter(ps);
     }
 }
 
-void MyWidget::setPlotLabel(int index, double sum, double mean, double rms,
+void HistogramPlot::setPlotLabel(int index, double sum, double mean, double rms,
                             double ps, double sum2, double mean2, double rms2) {
     if (index >= 0 && index < plotWidgets.size()) {
         plotWidgets[index]->setPlotLabel(sum, mean, rms, ps, sum2, mean2, rms2);
     }
 }
 
-void MyWidget::setFitRange(double min, double max) {
+void HistogramPlot::setFitRange(double min, double max) {
     for (SinglePlotWidget *widget : plotWidgets) { 
         widget->setFitRange(min,max);
     }
 }
 
-void MyWidget::fitHistogram() {
+void HistogramPlot::fitHistogram() {
     for (SinglePlotWidget *widget : plotWidgets) {
         if (widget) {
             widget->fitHistogram();
@@ -114,7 +114,7 @@ void MyWidget::fitHistogram() {
     }
 }
 
-void MyWidget::applyFullConfiguration(const QVector<double> &newValues,
+void HistogramPlot::applyFullConfiguration(const QVector<double> &newValues,
                                       int xAxisTypeParam, int thresholdParam,
                                       int yAxisTypeParam, int chargeTypeParam,
                                       int timeUnitTypeParam, int chargeUnitTypeParam,

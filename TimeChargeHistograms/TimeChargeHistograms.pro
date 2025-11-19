@@ -16,14 +16,14 @@ unix: LIBS += -L$$(API_ROOT)/../bin -lewo
 # Główne źródła
 SOURCES += \
     TimeChargeHistograms.cxx \
-    MyWidget.cxx \
+    HistogramPlot.cxx \
     SinglePlotWidget.cxx \
     qcustomplot.cpp \
     CustomYAxisTicker.cpp
 
 HEADERS += \
     TimeChargeHistograms.hxx \
-    MyWidget.hxx \
+    HistogramPlot.hxx \
     SinglePlotWidget.h \
     qcustomplot.h \
     CustomYAxisTicker.h

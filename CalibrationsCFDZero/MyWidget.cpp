@@ -1,4 +1,4 @@
-#include "MyWidget.hxx"
+#include "HistogramPlot.hxx"
 
 #include "qcustomplot.h"
 #include <QDebug>
@@ -15,7 +15,7 @@
 
 const QColor OKcolor(0xb0d959);
 
-MyWidget::MyWidget(QWidget *parent) : QCustomPlot(parent)
+HistogramPlot::HistogramPlot(QWidget *parent) : QCustomPlot(parent)
       , _colorMapsTime()
       , _axisRects()
       , _x0()
@@ -74,7 +74,7 @@ MyWidget::MyWidget(QWidget *parent) : QCustomPlot(parent)
   this->setMinimumHeight(400);
 }
 
-void MyWidget::clear() {
+void HistogramPlot::clear() {
   _x0.clear();
   _y0.clear();
   this->graph(0)->setData(_x0, _y0);
@@ -93,7 +93,7 @@ void MyWidget::clear() {
   setAxisRange(-50, 50, -500, 500);
   rescaleDataRanges();
 }
-void MyWidget::setAxisRange(double xMin, double xMax, double yMin, double yMax) {
+void HistogramPlot::setAxisRange(double xMin, double xMax, double yMin, double yMax) {
   for (int i=0; i<3; ++i) {
     //_colorMapsTime.at(i)->data()->setRange(QCPRange(xMin, xMax), QCPRange(yMin, yMax));
     _axisRects.at(1+i)->axis(QCPAxis::atBottom)->setRange(xMin, xMax);
@@ -101,7 +101,7 @@ void MyWidget::setAxisRange(double xMin, double xMax, double yMin, double yMax) 
   }
   this->replot();
 }
-void MyWidget::setTitles(const std::array<double, 3>& adcs) {
+void HistogramPlot::setTitles(const std::array<double, 3>& adcs) {
   for (int i=0; i<3; ++i) {
     auto p = qobject_cast<QCPTextElement*>(this->plotLayout()->element(1,i));
     p->setText(QString::asprintf("%.0fADC", adcs[i]));
@@ -109,12 +109,12 @@ void MyWidget::setTitles(const std::array<double, 3>& adcs) {
   }
   _axisRects.at(0)->axis(QCPAxis::atLeft)->setRange(0.8*adcs.front(), 1.2*adcs.back());
 }
-void MyWidget::rescaleDataRanges() {
+void HistogramPlot::rescaleDataRanges() {
   for (auto i=0; i<3; ++i) {
     _colorMapsTime.at(i)->rescaleDataRange(true);
   }
 }
-void MyWidget::addPoint(double x, double y, bool dots) {
+void HistogramPlot::addPoint(double x, double y, bool dots) {
   if (dots) {
     _x1.push_back(x);
     _y1.push_back(y);
@@ -125,11 +125,11 @@ void MyWidget::addPoint(double x, double y, bool dots) {
     this->graph(0)->setData(_x0, _y0);
   }
 }
-void MyWidget::setHistogramLine(int i, int j, QVector<quint32> x) {
+void HistogramPlot::setHistogramLine(int i, int j, QVector<quint32> x) {
   for (auto k=0; k<401; ++k) {
     _colorMapsTime.at(i)->data()->setCell(k, j, x[k]);
   }
 }
-void MyWidget::setInitialSteps(int steps) {
+void HistogramPlot::setInitialSteps(int steps) {
   _axisRects.at(0)->axis(QCPAxis::atBottom)->setRange(steps-1850, steps+50);
 }

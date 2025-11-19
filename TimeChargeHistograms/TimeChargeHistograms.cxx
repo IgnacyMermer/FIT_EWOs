@@ -1,5 +1,5 @@
 #include "TimeChargeHistograms.hxx"
-#include "MyWidget.hxx"
+#include "HistogramPlot.hxx"
 #include <QPalette>
 #include <QTime>
 #include <QDebug>
@@ -11,7 +11,7 @@ EWO_PLUGIN( TimeChargeHistograms )
 TimeChargeHistograms::TimeChargeHistograms(QWidget *parent)
     : BaseExternWidget(parent)
 {
-    baseWidget = new MyWidget(parent);
+    baseWidget = new HistogramPlot(parent);
 }
 
 QWidget* TimeChargeHistograms::widget() const
@@ -80,7 +80,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
             for (const QVariant &v : list) {
                 newValues.append(v.toDouble());
             }
-            static_cast<MyWidget*>(baseWidget)->setValues(newValues);
+            static_cast<HistogramPlot*>(baseWidget)->setValues(newValues);
         }
         return QVariant();
     }
@@ -91,7 +91,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
         }
         int min = values[0].toInt();
         int max = values[1].toInt();
-        static_cast<MyWidget*>(baseWidget)->setRange(min, max);
+        static_cast<HistogramPlot*>(baseWidget)->setRange(min, max);
         return QVariant();
     }
     else if (name == "setXAxisType") {
@@ -101,7 +101,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
         }
         int type = values[0].toInt();
         int threshold = values[1].toInt();
-        static_cast<MyWidget*>(baseWidget)->setXAxisType(type, threshold);
+        static_cast<HistogramPlot*>(baseWidget)->setXAxisType(type, threshold);
         return QVariant();
     }
     else if (name == "setChargeType") {
@@ -110,7 +110,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
             return QVariant();
         }
         int type = values[0].toInt();
-        static_cast<MyWidget*>(baseWidget)->setChargeType(type);
+        static_cast<HistogramPlot*>(baseWidget)->setChargeType(type);
         return QVariant();
     }
     else if (name == "setYAxisType") {
@@ -119,7 +119,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
             return QVariant();
         }
         int type = values[0].toInt();
-        static_cast<MyWidget*>(baseWidget)->setYAxisType(type);
+        static_cast<HistogramPlot*>(baseWidget)->setYAxisType(type);
         return QVariant();
     }
     else if (name == "setTimeUnits"){
@@ -128,7 +128,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
             return QVariant();
         }
         int type = values[0].toInt();
-        static_cast<MyWidget*>(baseWidget)->setTimeUnits(type);
+        static_cast<HistogramPlot*>(baseWidget)->setTimeUnits(type);
         return QVariant();
     }
     else if (name == "setChargeUnits"){
@@ -137,7 +137,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
             return QVariant();
         }
         int type = values[0].toInt();
-        static_cast<MyWidget*>(baseWidget)->setChargeUnits(type);
+        static_cast<HistogramPlot*>(baseWidget)->setChargeUnits(type);
         return QVariant();
     }
     else if (name == "setMVPerMIP"){
@@ -146,7 +146,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
             return QVariant();
         }
         double value = values[0].toDouble();
-        static_cast<MyWidget*>(baseWidget)->setChargeUnitsValues(value, true);
+        static_cast<HistogramPlot*>(baseWidget)->setChargeUnitsValues(value, true);
         return QVariant();
     }
     else if (name == "setADCUperMIP"){
@@ -155,7 +155,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
             return QVariant();
         }
         double value = values[0].toDouble();
-        static_cast<MyWidget*>(baseWidget)->setChargeUnitsValues(value, false);
+        static_cast<HistogramPlot*>(baseWidget)->setChargeUnitsValues(value, false);
         return QVariant();
     }
     else if (name == "setPlotLabel") {
@@ -168,7 +168,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
         double mean = values[2].toDouble();
         double rms = values[3].toDouble();
         double ps = values[4].toDouble();
-        static_cast<MyWidget*>(baseWidget)->setPlotLabel(index, sum, mean, rms, ps);
+        static_cast<HistogramPlot*>(baseWidget)->setPlotLabel(index, sum, mean, rms, ps);
         return QVariant();
     }
     else if (name == "applyFullConfiguration") {
@@ -190,7 +190,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
         float chargeUnitValueADC = static_cast<float>(values[8].toDouble());
         bool psParam = values[9].toBool();
 
-        static_cast<MyWidget*>(baseWidget)->applyFullConfiguration(
+        static_cast<HistogramPlot*>(baseWidget)->applyFullConfiguration(
             newValues, xAxisType, threshold, yAxisType, chargeType, 
             timeUnitType, chargeUnitType, chargeUnitValueMV, chargeUnitValueADC, 
             psParam);
@@ -203,7 +203,7 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
             return QVariant();
         }
         bool psParam = values[0].toBool();
-        static_cast<MyWidget*>(baseWidget)->setPsParameter(psParam);
+        static_cast<HistogramPlot*>(baseWidget)->setPsParameter(psParam);
         return QVariant();
     }
     
@@ -214,12 +214,12 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
         }   
         double fitMin = values[0].toDouble();
         double fitMax = values[1].toDouble();
-        static_cast<MyWidget*>(baseWidget)->setFitRange(fitMin, fitMax);
+        static_cast<HistogramPlot*>(baseWidget)->setFitRange(fitMin, fitMax);
         return QVariant();
     }
 
     else if (name == "fitHistogram") {
-        static_cast<MyWidget*>(baseWidget)->fitHistogram();
+        static_cast<HistogramPlot*>(baseWidget)->fitHistogram();
         return QVariant();
     }
  

@@ -5,7 +5,7 @@
 #include <QPen>
 #include <QBrush>
 #include <QPushButton>
-#include "MyWidget.hxx"  // Use quotes if MyWidget is a project file
+#include "HistogramPlot.hxx"  // Use quotes if HistogramPlot is a project file
 
 class EWO_EXPORT TimeChargeHistograms : public BaseExternWidget
 {
@@ -33,7 +33,7 @@ public slots:
     virtual QVariant invokeMethod(const QString &name, QList<QVariant> &values, QString &error);
 
 private:
-    MyWidget *baseWidget;
+    HistogramPlot *baseWidget;
 
 //signals:
   //  bool signalInterface(const QString &name, QList<QVariant::Type> &args) const;

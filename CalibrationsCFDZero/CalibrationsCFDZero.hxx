@@ -6,7 +6,7 @@
 #include <QBrush>
 #include <QPushButton>
 #include "qcustomplot.h"
-#include "MyWidget.hxx"
+#include "HistogramPlot.hxx"
 
 class EWO_EXPORT CalibrationsCFDZero : public BaseExternWidget
 {
@@ -34,7 +34,7 @@ public slots:
     virtual QVariant invokeMethod(const QString &name, QList<QVariant> &values, QString &error);
 
 private:
-    MyWidget *baseWidget;
+    HistogramPlot *baseWidget;
     QList<QCustomPlot *> plots;
 
 //signals:

@@ -23,5 +23,5 @@ HEADERS += qcustomplot.h
 SOURCES += CustomYAxisTicker.cpp
 HEADERS += CustomYAxisTicker.h
 
-SOURCES += MyWidget.cpp
-HEADERS += MyWidget.hxx
+SOURCES += HistogramPlot.cpp
+HEADERS += HistogramPlot.hxx

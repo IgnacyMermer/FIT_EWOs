@@ -12,7 +12,7 @@ const QColor OKcolor(0xb0d959);
 CalibrationsCFDZero::CalibrationsCFDZero(QWidget *parent)
     : BaseExternWidget(parent)
 {
-    baseWidget = new MyWidget(parent);
+    baseWidget = new HistogramPlot(parent);
 }
 
 QWidget* CalibrationsCFDZero::widget() const

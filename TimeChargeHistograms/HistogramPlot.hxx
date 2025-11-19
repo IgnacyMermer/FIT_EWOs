@@ -1,16 +1,16 @@
-#ifndef MYWIDGET_HXX
-#define MYWIDGET_HXX
+#ifndef HISTOGRAMPLOT_HXX
+#define HISTOGRAMPLOT_HXX
 
 #include <QWidget>
 #include <QVector>
 
 class SinglePlotWidget;
 
-class MyWidget : public QWidget {
+class HistogramPlot : public QWidget {
     Q_OBJECT
 
 public:
-    explicit MyWidget(QWidget *parent = nullptr);
+    explicit HistogramPlot(QWidget *parent = nullptr);
 
     void setValues(const QVector<double> &newValues);
     void setRange(double min, double max);
@@ -42,4 +42,4 @@ private:
 
 };
 
-#endif // MYWIDGET_HXX
+#endif // HISTOGRAMPLOT_HXX
