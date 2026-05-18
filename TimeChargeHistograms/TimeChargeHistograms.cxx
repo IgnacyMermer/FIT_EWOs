@@ -91,17 +91,24 @@ QVariant TimeChargeHistograms::invokeMethod(const QString &name, QList<QVariant>
         }
         int min = values[0].toInt();
         int max = values[1].toInt();
+        globalMinRange = min;
+        globalMaxRange = max;
         static_cast<HistogramPlot*>(baseWidget)->setRange(min, max);
         return QVariant();
     }
     else if (name == "setXAxisType") {
-        if (values.size() != 2) {
+        if (values.size() < 2) {
             error = "Expected a list of 2 ints";
             return QVariant();
         }
         int type = values[0].toInt();
         int threshold = values[1].toInt();
-        static_cast<HistogramPlot*>(baseWidget)->setXAxisType(type, threshold);
+        int minBin = globalMinRange, maxBin=globalMaxRange;
+        if(values.size() == 4){
+            minBin = values[2].toInt();
+            maxBin = values[3].toInt();
+        }
+        static_cast<HistogramPlot*>(baseWidget)->setXAxisType(type, threshold, minBin, maxBin);
         return QVariant();
     }
     else if (name == "setChargeType") {

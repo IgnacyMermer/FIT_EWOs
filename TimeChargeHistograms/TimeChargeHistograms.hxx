@@ -34,6 +34,7 @@ public slots:
 
 private:
     HistogramPlot *baseWidget;
+    int globalMinRange, globalMaxRange;
 
 //signals:
   //  bool signalInterface(const QString &name, QList<QVariant::Type> &args) const;
